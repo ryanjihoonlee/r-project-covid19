@@ -1,0 +1,167 @@
+---
+title: "Exploratory Data Analysis on COVID-19"
+output: html_document
+date: "2024-06-20"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### From Epidemic to Pandemic
+
+##### In December 2019, the COVID-19 coronavirus was initially identified in the Wuhan region of China. By March 11, 2020, the World Health Organization (WHO) had classified the COVID-19 outbreak as a pandemic. 
+
+##### The transmission of COVID-19 primarily occurs through respiratory droplets, such as those released during coughing, sneezing, or talking. However, how rapidly did the virus spread worldwide? Furthermore, is there any observable impact from nationwide policies, such as shutdowns and quarantines?
+
+##### Fortunately, various organizations worldwide have been collecting data to help governments monitor and understand this pandemic. Notably, the Johns Hopkins University Center for Systems Science and Engineering established a publicly accessible data repository to compile information from sources like the WHO, the Centers for Disease Control and Prevention (CDC), and various countries' Ministries of Health.
+
+```{r}
+
+setwd("/Users/ryanlee/Desktop/R/R Projects/COVID-19/datasets")
+
+# Load the readr, ggplot2, and dplyr packages
+library(readr)
+library(ggplot2)
+library(dplyr)
+
+```
+
+### Confirmed Cases Worldwide Over Time
+
+##### The table below shows the cumulative confirmed cases of COVID-19 worldwide by date.
+
+```{r}
+
+confirmed_cases_worldwide <- read_csv("/Users/ryanlee/Desktop/R/R Projects/COVID-19/datasets/confirmed_cases_worldwide.csv")
+
+```
+
+##### The plot's y-axis is quite alarming, showing the total number of confirmed cases worldwide nearing 200,000. Additionally, some peculiar trends are noticeable: there is a sudden increase in mid-February, followed by a period of slower growth in new cases, which then accelerates again in March.
+
+```{r}
+
+# Draw a line plot of Cumulative Confirmed Cases vs. Date
+ggplot(confirmed_cases_worldwide, aes(x = date,  y = cum_cases)) +
+  geom_line(color = "blue") +
+  labs(title = "Cumulative Confirmed COVID-19 Cases Worldwide", x = "Date", y = "Cumulative Confirmed Cases") + 
+  theme(legend.position = "none", 
+        plot.title = element_text(face = "bold"))
+
+```
+
+### Comparison of China with the Rest of the World
+
+#### China
+
+##### At the outset of the outbreak, the majority of COVID-19 cases were concentrated in China.
+
+##### The table below shows the cumulative confirmed cases of COVID-19 in China by date.
+
+```{r}
+
+confirmed_cases_china_vs_world <- read_csv("/Users/ryanlee/Desktop/R/R Projects/COVID-19/datasets/confirmed_cases_china_vs_world.csv")
+
+```
+
+##### The two lines exhibit distinct shapes. In February, the majority of cases were within China. However, in March, the situation shifted significantly as the outbreak evolved into a global crisis. Around March 14, the total number of cases outside China surpassed those within the country. This shift occurred just days after the WHO officially declared the outbreak a pandemic.
+
+##### Several other notable events marked the progression of the outbreak. For instance, the significant spike in the China line on February 13, 2020, was not merely a reflection of a single day's increase in cases. Rather, it was due to a change in China's reporting methodology. From that day on, China began accepting CT scans as evidence of COVID-19 cases, in addition to laboratory tests. 
+
+```{r}
+
+# Draw a line plot of Cumulative Confirmed Cases vs. Date, colored by the variable 'is_china'
+plt_cum_confirmed_cases_china_vs_world <- ggplot(confirmed_cases_china_vs_world) +
+  geom_line(aes(x = date, y = cum_cases, color = is_china)) +
+  labs(title = "Comparing Cumulative Confirmed COVID-19 Cases in China to the Rest of the World", x = "Date", y = "Cumulative Confirmed Cases") +
+  theme(plot.title = element_text(face = "bold")) +
+  guides(color = guide_legend(title = "Region"))
+
+plt_cum_confirmed_cases_china_vs_world
+
+who_events <- tribble(
+  ~ date, ~ event,
+  "2020-01-30", "Global health\nemergency declared",
+  "2020-03-11", "Pandemic\ndeclared",
+  "2020-02-13", "China reporting\nchange"
+) |> 
+  mutate(date = as.Date(date))
+
+plt_cum_confirmed_cases_china_vs_world +
+  geom_vline(aes(xintercept = date), data = who_events, linetype = "dashed") +
+  geom_text(aes(date, label = event), data = who_events, y = 100000)
+
+```
+
+##### After the surge of cases around February 13, 2020, following the reporting change in China, there is a noticeable slowdown in the growth of cases within China. 
+
+##### Based on the plot, it appears that the growth rate of cases in China is slower than linear. This is positive news as it suggests that by late February and early March, China had managed to contain the virus to some extent.
+
+```{r}
+
+# Filter for China, from Feb 15
+china_after_feb15 <- confirmed_cases_china_vs_world |> 
+  filter(is_china == "China", date >= "2020-02-15")
+
+# Draw a line plot Cumulative Confirmed Cases vs. Date
+ggplot(china_after_feb15, aes(x = date, y = cum_cases)) +
+  geom_line(color = "red") +
+  geom_smooth(method = "lm", se = FALSE, color = "black", show.legend = FALSE) +
+  labs(title = "Cumulative Confirmed COVID-19 Cases in China After February 15th", x = "Date", y = "Cumulative Confirmed Cases") +
+  theme(plot.title = element_text(face = "bold"))
+
+```
+
+#### The Rest of the World
+
+##### For this data, using the logarithmic scale provides a much closer fit to the data. From a data science perspective, a close fit is positive news. However, from a public health standpoint, this indicates that COVID-19 cases in the rest of the world are growing exponentially, which is concerning. 
+
+##### Not all countries are experiencing the impact of COVID-19 equally, making it important to identify regions facing the greatest challenges. Let's identify the countries outside of China with the highest number of confirmed cases in our dataset.
+
+```{r}
+
+# Filter confirmed_cases_china_vs_world for not China
+not_china <- confirmed_cases_china_vs_world |> 
+  filter(is_china == "Not China")
+
+# Draw a line plot Cumulative Confirmed Cases vs. Date
+plt_not_china_trend_line <- ggplot(not_china, aes(x = date, y = cum_cases)) +
+  geom_line(color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  labs(title = "Cumulative Confirmed COVID-19 Cases in the Rest of the World", x = "Date", y = "Cumulative Confirmed Cases") +
+  theme(plot.title = element_text(face = "bold")) + 
+  scale_y_log10()
+  
+plt_not_china_trend_line
+
+```
+
+### Which countries outside of China have been most severely affected?
+
+##### Even though the outbreak was first identified in China, there is only one country from East Asia (South Korea) in the table. Four of the listed countries (France, Germany, Italy, and Spain) are in Europe and share borders. 
+
+```{r}
+
+confirmed_cases_by_country <- read_csv("/Users/ryanlee/Desktop/R/R Projects/COVID-19/datasets/confirmed_cases_by_country.csv")
+
+confirmed_cases_top7_outside_china <- read_csv("/Users/ryanlee/Desktop/R/R Projects/COVID-19/datasets/confirmed_cases_top7_outside_china.csv")
+
+```
+
+##### Despite the outbreak's origin in China, only one country from East Asia (South Korea) appears in the table above. The other four countries listed (France, Germany, Italy, and Spain) are European nations that share borders. 
+
+```{r}
+
+top_countries_by_total_cases <- confirmed_cases_by_country |> 
+  group_by(country) |> 
+  summarize(total_cases = max(cum_cases)) |> 
+  top_n(7, total_cases)
+  
+top_countries_by_total_cases
+
+ggplot(confirmed_cases_top7_outside_china, aes(x = date, y = cum_cases)) +
+  geom_line(aes(color = country)) +
+  labs(title = " Which Countries Outside of China Have Been Hit The Hardest?", x = "Date", y = "Cumulative Confirmed Cases") +
+  theme(plot.title = element_text(face = "bold"))
+
+```
