@@ -19,4 +19,4 @@ Packages used:
 The dataset comprises confirmed COVID-19 cases worldwide, including specific datasets for cumulative confirmed cases globally, in China, and in other countries. Key variables include date, country, number of cases, and cumulative cases.
 
 ## Source
-The data is available at [http://archive.ics.uci.edu/ml/datasets/Facebook+metrics.](https://github.com/RamiKrispin/coronavirus).
+The data is available at https://github.com/RamiKrispin/coronavirus.
