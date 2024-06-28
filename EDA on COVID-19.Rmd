@@ -18,8 +18,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 
-setwd("/Users/ryanlee/Desktop/R/R Projects/COVID-19/datasets")
-
 # Load the readr, ggplot2, and dplyr packages
 library(readr)
 library(ggplot2)
@@ -33,7 +31,7 @@ library(dplyr)
 
 ```{r}
 
-confirmed_cases_worldwide <- read_csv("/Users/ryanlee/Desktop/R/R Projects/COVID-19/datasets/confirmed_cases_worldwide.csv")
+confirmed_cases_worldwide <- read_csv("/Users/ryanlee/Desktop/R/R Projects/COVID-19/dataset/confirmed_cases_worldwide.csv")
 
 ```
 
@@ -60,7 +58,7 @@ ggplot(confirmed_cases_worldwide, aes(x = date,  y = cum_cases)) +
 
 ```{r}
 
-confirmed_cases_china_vs_world <- read_csv("/Users/ryanlee/Desktop/R/R Projects/COVID-19/datasets/confirmed_cases_china_vs_world.csv")
+confirmed_cases_china_vs_world <- read_csv("/Users/ryanlee/Desktop/R/R Projects/COVID-19/dataset/confirmed_cases_china_vs_world.csv")
 
 ```
 
@@ -142,9 +140,9 @@ plt_not_china_trend_line
 
 ```{r}
 
-confirmed_cases_by_country <- read_csv("/Users/ryanlee/Desktop/R/R Projects/COVID-19/datasets/confirmed_cases_by_country.csv")
+confirmed_cases_by_country <- read_csv("/Users/ryanlee/Desktop/R/R Projects/COVID-19/dataset/confirmed_cases_by_country.csv")
 
-confirmed_cases_top7_outside_china <- read_csv("/Users/ryanlee/Desktop/R/R Projects/COVID-19/datasets/confirmed_cases_top7_outside_china.csv")
+confirmed_cases_top7_outside_china <- read_csv("/Users/ryanlee/Desktop/R/R Projects/COVID-19/dataset/confirmed_cases_top7_outside_china.csv")
 
 ```
 
